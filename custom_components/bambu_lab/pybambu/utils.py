@@ -41,8 +41,8 @@ def get_stage_action(_id):
 
 
 def get_printer_type(modules, default):
-    esp32 = search(modules, lambda x: x.get('name', "") == "esp32")
-    rv1126 = search(modules, lambda x: x.get('name', "") == "rv1126")
+    esp32 = search(modules, lambda x: x.get("name", "") == "esp32")
+    rv1126 = search(modules, lambda x: x.get("name", "") == "rv1126")
     if len(esp32.keys()) > 1:
         if esp32.get("hw_ver") == "AP04":
             LOGGER.debug("Device is P1P")
@@ -55,8 +55,8 @@ def get_printer_type(modules, default):
 
 
 def get_hw_version(modules, default):
-    esp32 = search(modules, lambda x: x.get('name', "") == "esp32")
-    rv1126 = search(modules, lambda x: x.get('name', "") == "rv1126")
+    esp32 = search(modules, lambda x: x.get("name", "") == "esp32")
+    rv1126 = search(modules, lambda x: x.get("name", "") == "rv1126")
     if len(esp32.keys()) > 1:
         if esp32.get("hw_ver") == "AP04":
             return esp32.get("hw_ver")
@@ -67,8 +67,8 @@ def get_hw_version(modules, default):
 
 
 def get_sw_version(modules, default):
-    esp32 = search(modules, lambda x: x.get('name', "") == "esp32")
-    rv1126 = search(modules, lambda x: x.get('name', "") == "rv1126")
+    esp32 = search(modules, lambda x: x.get("name", "") == "esp32")
+    rv1126 = search(modules, lambda x: x.get("name", "") == "rv1126")
     if len(esp32.keys()) > 1:
         if esp32.get("hw_ver") == "AP04":
             return esp32.get("sw_ver")
@@ -76,3 +76,8 @@ def get_sw_version(modules, default):
         if rv1126.get("sw_ver") == "AP05":
             return rv1126.get("hw_ver")
     return default
+
+
+def timestamp_hms(minutes):
+    """Converts minutes into hh:mm:ss"""
+    return f"{int (minutes // 1440):02}:{int ((minutes % 1440) // 60):02}:{int ((minutes % 1440) % 60):02}"

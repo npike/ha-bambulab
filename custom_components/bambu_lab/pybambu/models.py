@@ -1,6 +1,14 @@
 from dataclasses import dataclass
-from .utils import search, fan_percentage, get_speed_name, get_stage_action, get_printer_type
+from .utils import (
+    search,
+    fan_percentage,
+    get_speed_name,
+    get_stage_action,
+    get_printer_type,
+    timestamp_hms,
+)
 from .const import LOGGER
+import time
 
 
 class Device:
@@ -26,6 +34,7 @@ class Device:
 @dataclass
 class Lights:
     """Return all light related info"""
+
     chamber_light: str
     work_light: str
 
@@ -36,17 +45,22 @@ class Lights:
     def update(self, data):
         """Update from dict"""
 
-        self.chamber_light = \
-            search(data.get("lights_report", []), lambda x: x.get('node', "") == "chamber_light",
-                   {"mode": self.chamber_light}).get("mode")
-        self.work_light = \
-            search(data.get("lights_report", []), lambda x: x.get('node', "") == "work_light",
-                   {"mode": self.work_light}).get("mode")
+        self.chamber_light = search(
+            data.get("lights_report", []),
+            lambda x: x.get("node", "") == "chamber_light",
+            {"mode": self.chamber_light},
+        ).get("mode")
+        self.work_light = search(
+            data.get("lights_report", []),
+            lambda x: x.get("node", "") == "work_light",
+            {"mode": self.work_light},
+        ).get("mode")
 
 
 @dataclass
 class Temperature:
     """Return all temperature related info"""
+
     bed_temp: int
     target_bed_temp: int
     chamber_temp: int
@@ -67,12 +81,15 @@ class Temperature:
         self.target_bed_temp = data.get("bed_target_temper", self.target_bed_temp)
         self.chamber_temp = data.get("chamber_temper", self.chamber_temp)
         self.nozzle_temp = round(data.get("nozzle_temper", self.nozzle_temp))
-        self.target_nozzle_temp = data.get("nozzle_target_temper", self.target_nozzle_temp)
+        self.target_nozzle_temp = data.get(
+            "nozzle_target_temper", self.target_nozzle_temp
+        )
 
 
 @dataclass
 class Fans:
     """Return all temperature related info"""
+
     aux_fan_speed: int
     _aux_fan_speed: int
     chamber_fan_speed: int
@@ -100,15 +117,20 @@ class Fans:
         self.chamber_fan_speed = fan_percentage(self._chamber_fan_speed)
         self._cooling_fan_speed = data.get("cooling_fan_speed", self._cooling_fan_speed)
         self.cooling_fan_speed = fan_percentage(self._cooling_fan_speed)
-        self._heatbreak_fan_speed = data.get("heatbreak_fan_speed", self._heatbreak_fan_speed)
+        self._heatbreak_fan_speed = data.get(
+            "heatbreak_fan_speed", self._heatbreak_fan_speed
+        )
         self.heatbreak_fan_speed = fan_percentage(self._heatbreak_fan_speed)
 
 
 @dataclass
 class Info:
     """Return all information related content"""
+
     wifi_signal: int
     print_percentage: int
+    print_remaining_time: str
+    _print_remaining_time: int
     device_type: str
     hw_ver: str
     sw_ver: str
@@ -116,14 +138,22 @@ class Info:
     def __init__(self):
         self.wifi_signal = 0
         self.print_percentage = 0
+        self._print_remaining_time = 0
+        self.print_remaining_time = "Unknown"
         self.device_type = "Unknown"
         self.hw_ver = "Unknown"
         self.sw_ver = "Unknown"
 
     def update(self, data):
         """Update from dict"""
-        self.wifi_signal = int(data.get("wifi_signal", str(self.wifi_signal)).replace("dBm", ""))
+        self.wifi_signal = int(
+            data.get("wifi_signal", str(self.wifi_signal)).replace("dBm", "")
+        )
         self.print_percentage = data.get("mc_percent", self.print_percentage)
+        self._print_remaining_time = data.get(
+            "mc_remaining_time", self._print_remaining_time
+        )
+        self.print_remaining_time = timestamp_hms(self._print_remaining_time)
         self.device_type = get_printer_type(data.get("module", []), self.device_type)
         self.hw_ver = get_printer_type(data.get("module", []), self.hw_ver)
         self.sw_ver = get_printer_type(data.get("module", []), self.sw_ver)
@@ -150,6 +180,7 @@ class Info:
 @dataclass
 class Speed:
     """Return speed profile information"""
+
     _id: int
     name: str
     modifier: int
@@ -157,7 +188,7 @@ class Speed:
     def __init__(self):
         """Load from dict"""
         self._id = 0
-        self.name = get_speed_name(0),
+        self.name = (get_speed_name(0),)
         self.modifier = 0
 
     def update(self, data):
@@ -170,6 +201,7 @@ class Speed:
 @dataclass
 class StageAction:
     """Return Stage Action information"""
+
     _id: int
     description: str
 
